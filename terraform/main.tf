@@ -28,6 +28,15 @@ resource "aws_internet_gateway" "gw" {
   }
 }
 
+resource "aws_eip" "eip" {
+  instance = aws_instance.main.id
+  domain = "vpc"
+
+  tags = {
+    Name = "Conduit elastic ip"
+  }
+}
+
 # route tables
 resource "aws_route_table" "public_rt" {
   vpc_id = aws_vpc.main.id
