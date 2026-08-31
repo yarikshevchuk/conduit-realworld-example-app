@@ -44,5 +44,6 @@ yarn-error.log*
 
 #terraform
 terraform/terraform.tfvars
+terraform/.terraform*.*
+terraform/terraform*.*
 terraform/.terraform*
-terraform/.terraform
