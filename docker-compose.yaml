@@ -4,22 +4,17 @@ services:
   db:
     image: postgres:14-alpine
     restart: always
-    environment:
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: ${DB_NAME}
     volumes:
       - pgdata:/var/lib/postgresql/data
   
   backend: 
-    image: shevua/conduit-backend:latest
+    image: ${DOCKER_HUB_USER}/${BACKEND_IMAGE}:{BUILD_NUMBER}
     restart: always
     environment:
-      DB_USERNAME: ${DB_USER}
-      DB_PASSWORD: ${DB_PASSWORD}
-      DB_NAME: ${DB_NAME}
-      DB_HOST: db
-      DB_PORT: 5432
+      NODE_ENV: 'production'
+      PROD_DB_HOSTNAME: 'db'
+      PROD_DB_DIALECT: 'postgres'
+      PROD_DB_LOGGIN: 'false'
       PORT: 3001
     expose: 
       - "3001"
@@ -27,7 +22,7 @@ services:
       - db
   
   frontend:
-    image: shevua/conduit-frontend:latest
+    image: ${DOCKER_HUB_USER}/${FRONTEND_IMAGE}:{BUILD_NUMBER}
     restart: always
     environment: 
       REACT_APP_BACKEND_URL: /api
