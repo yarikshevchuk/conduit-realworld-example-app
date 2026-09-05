@@ -11,8 +11,8 @@ pipeline {
 
   stages {
     stage ('Provision using Terraform') {
-      dir('terraform') {
-        steps {
+      steps {
+        dir('terraform') {
           withCredentials([
             string(credentialsId: 'aws-access-key-id', variable: 'AWS_ACCESS_KEY_ID'),
             string(credentialsId: 'aws-secret-access-key', variable: 'AWS_SECRET_ACCESS_KEY')
@@ -38,7 +38,11 @@ pipeline {
 
     stage ('Wait for EC2 to load') {
       steps {
-        sh 'sleep 30'
+        sshagent(['app-server-ssh']) {
+          sh """
+            timeout 180 bash -c 'until ssh -o StrictHostKeyChecking=no -o ConnectTimeout=5 ubuntu@${env.APP_SERBER_IP} "echo ready"; do sleep 10; done  '
+          """
+        }
       }
     }
 
@@ -98,11 +102,27 @@ pipeline {
               export FRONTEND_IMAGE='${FRONTEND_IMAGE}'
               export BUILD_NUMBER='${BUILD_NUMBER}'
 
-              docker compose pull 
+              docker compose pull &&
               docker compose up -d
             "
           """
         }
+      }
+    }
+
+    stage ('DB migration') {
+      steps {
+        sh """ 
+          ssh -o StrictHostKeyChecking=no ubuntu@${env.APP_SERVER_IP} "
+            export DOCKER_HUB_USER='${DOCKER_HUB_USER}' &&
+            export BACKEND_IMAGE='${BACKEND_IMAGE}' &&
+            export BUILD_NUMBER='${BUILD_NUMBER}' &&
+
+            timeout 60 bash -c 'until docker compose exec -T db pg_isready; do sleep 3; done' &&
+
+            docker compose exec -T backend npm run sqlz -- db:migrate
+          "
+        """
       }
     }
 
@@ -112,5 +132,5 @@ pipeline {
     always {
       sh 'docker image prune -f'
     }
-  }
+  } 
 }
