@@ -43,7 +43,7 @@ pipeline {
       steps {
         sshagent(['app-server-ssh']) {
           sh """
-            timeout 180 bash -c 'until ssh -o StrictHostKeyChecking=no -o ConnectTimeout=5 ubuntu@${env.APP_SERBER_IP} "echo ready"; do sleep 10; done  '
+            timeout 180 bash -c 'until ssh -o StrictHostKeyChecking=no -o ConnectTimeout=5 ubuntu@${env.APP_SERVER_IP} "echo ready"; do sleep 10; done  '
           """
         }
       }
