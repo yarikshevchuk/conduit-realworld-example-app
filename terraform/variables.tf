@@ -3,11 +3,6 @@ variable "aws_region" {
   type    = string
 }
 
-variable "public_key_path" {
-  description = "Path to the local public SSH key"
-  type        = string
-}
-
 variable "any_ip" {
   description = "All possible IPs"
   type        = string
