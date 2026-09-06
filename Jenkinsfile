@@ -30,10 +30,14 @@ pipeline {
     stage ('Obtain APP_SERVER_IP') {
       steps {
         dir('terraform') {
-          script {
-            env.APP_SERVER_IP = sh(script: "terraform output -raw app_server_public_ip", returnStdout: true).trim()
-          
-            echo "Server public IP: ${env.APP_SERVER_IP}"
+          withCredentials([
+            string(credentialsId: 'aws-access-key-id', variable: 'AWS_ACCESS_KEY_ID'),
+            string(credentialsId: 'aws-secret-access-key', variable: 'AWS_SECRET_ACCESS_KEY')
+          ]) {
+            script {
+              env.APP_SERVER_IP = sh(script: "terraform output -raw app_server_public_ip", returnStdout: true).trim()
+              echo "Server public IP: ${env.APP_SERVER_IP}"
+            }
           }
         }
       }
