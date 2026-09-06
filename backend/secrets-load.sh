@@ -3,7 +3,7 @@ set -e
 
 SECRET=$(
   aws secretsmanager get-secret-value \
-  --secret-id = conduit/db/credentials \ 
+  --secret-id conduit/db/credentials \
   --query SecretString --output text
 )
 
