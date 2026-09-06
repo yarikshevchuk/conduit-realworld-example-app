@@ -15,7 +15,10 @@ pipeline {
         dir('terraform') {
           withCredentials([
             string(credentialsId: 'aws-access-key-id', variable: 'AWS_ACCESS_KEY_ID'),
-            string(credentialsId: 'aws-secret-access-key', variable: 'AWS_SECRET_ACCESS_KEY')
+            string(credentialsId: 'aws-secret-access-key', variable: 'AWS_SECRET_ACCESS_KEY'),
+            string(credentialsId: 'db-user', variable: 'TF_VAR_DB_USER'),
+            string(credentialsId: 'db-password', variable: 'TF_VAR_DB_PASSWORD'),
+            string(credentialsId: 'db-name', variable: 'TF_VAR_DB_NAME')
           ]) {
             echo "Provisioning infrastructure"
             sh 'make'
