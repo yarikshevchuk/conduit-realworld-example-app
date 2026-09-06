@@ -153,7 +153,7 @@ resource "aws_iam_instance_profile" "ec2_profile" {
 
 resource "aws_key_pair" "key" {
   key_name   = "conduit-ec2-key"
-  public_key = file(var.public_key_path)
+  public_key = file("./conduit_project_key.pub")
 }
 
 resource "aws_instance" "main" {
