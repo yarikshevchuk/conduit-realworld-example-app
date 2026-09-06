@@ -133,7 +133,7 @@ pipeline {
 
   post {
     always {
-      node {
+      node ('') {
         sh 'docker image prune -f'
       }
     }
