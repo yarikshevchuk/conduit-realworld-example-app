@@ -8,7 +8,7 @@ RUN npm install
 COPY . .
 
 COPY secrets-load.sh /usr/local/bin/secrets-load.sh
-RUN chmod +x /user/local/bin/secrets-load.sh
+RUN chmod +x /usr/local/bin/secrets-load.sh
 
 ENTRYPOINT ["secrets-load.sh"]
 EXPOSE 3001
