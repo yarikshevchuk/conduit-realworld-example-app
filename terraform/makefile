@@ -10,7 +10,7 @@ terraform: init validate plan fmt apply
 
 init:
 	@printf "$(GREEN) Terraform init: $(RESET)\n"
-	@terraform init
+	@terraform init -migrate-state -force-copy
 
 validate:
 	@printf "$(GREEN) Terraform validate: $(RESET)\n"
