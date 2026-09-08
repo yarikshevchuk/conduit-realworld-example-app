@@ -47,7 +47,8 @@ pipeline {
       steps {
         sshagent(['app-server-ssh']) {
           sh """
-            timeout 180 bash -c 'until ssh -o StrictHostKeyChecking=no -o ConnectTimeout=5 ubuntu@${env.APP_SERVER_IP} "echo ready"; do sleep 10; done  '
+            timeout 180 bash -c 'until ssh -o StrictHostKeyChecking=no -o ConnectTimeout=5 ubuntu@${env.APP_SERVER_IP} "echo ready"; do sleep 10; done'
+            ssh -o StrictHostKeyChecking=no ubuntu@${env.APP_SERVER_IP} "cloud-init status --wait"
           """
         }
       }
