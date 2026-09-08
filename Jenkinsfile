@@ -106,14 +106,23 @@ pipeline {
             scp -o StrictHostKeyChecking=no ./nginx.conf ubuntu@${env.APP_SERVER_IP}:~/nginx.conf
 
             ssh -o StrictHostKeyChecking=no ubuntu@${env.APP_SERVER_IP} "
-              export DOCKER_HUB_USER='${DOCKER_HUB_USER}'
-              export BACKEND_IMAGE='${BACKEND_IMAGE}'
-              export FRONTEND_IMAGE='${FRONTEND_IMAGE}'
-              export BUILD_NUMBER='${BUILD_NUMBER}'
+              SECRET=\$(aws secretsmanager get-secret-value \
+                --secret-id conduit/db/credentials \
+                --query SecretString --output text)
 
-              docker compose pull &&
+              echo "DOCKER_HUB_USER=${DOCKER_HUB_USER}" > ~/.env
+              echo "BACKEND_IMAGE=${BACKEND_IMAGE}" >> ~/.env
+              echo "FRONTEND_IMAGE=${FRONTEND_IMAGE}" >> ~/.env
+              echo "BUILD_NUMBER=${BUILD_NUMBER}" >> ~/.env
+              echo "PROD_DB_USERNAME=\$(echo "\$SECRET" | jq -r .DB_USER)" >> ~/.env
+              echo "PROD_DB_PASSWORD=\$(echo "\$SECRET" | jq -r .DB_PASSWORD)" >> ~/.env
+              echo "PROD_DB_NAME=\$(echo "\$SECRET" | jq -r .DB_NAME)" >> ~/.env
+
+              chmod 600 ~/.env
+              docker compose pull
               docker compose up -d
-            "
+EOF
+            " 
           """
         }
       }
@@ -124,10 +133,6 @@ pipeline {
         sshagent(['app-server-ssh']) {
           sh """ 
             ssh -o StrictHostKeyChecking=no ubuntu@${env.APP_SERVER_IP} "
-              export DOCKER_HUB_USER='${DOCKER_HUB_USER}' &&
-              export BACKEND_IMAGE='${BACKEND_IMAGE}' &&
-              export BUILD_NUMBER='${BUILD_NUMBER}' &&
-
               timeout 60 bash -c 'until docker compose exec -T db pg_isready; do sleep 3; done' &&
 
               docker compose exec -T backend npm run sqlz -- db:migrate
