@@ -103,6 +103,7 @@ pipeline {
         sshagent(['app-server-ssh']) {
           sh """
             scp -o StrictHostKeyChecking=no ./docker-compose.yaml ubuntu@${env.APP_SERVER_IP}:~/docker-compose.yaml
+            scp -o StrictHostKeyChecking=no ./nginx.conf ubuntu@${env.APP_SERVER_IP}:~/nginx.conf
 
             ssh -o StrictHostKeyChecking=no ubuntu@${env.APP_SERVER_IP} "
               export DOCKER_HUB_USER='${DOCKER_HUB_USER}'
