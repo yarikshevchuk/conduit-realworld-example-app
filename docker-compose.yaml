@@ -8,7 +8,7 @@ services:
       - pgdata:/var/lib/postgresql/data
   
   backend: 
-    image: ${DOCKER_HUB_USER}/${BACKEND_IMAGE}:{BUILD_NUMBER}
+    image: ${DOCKER_HUB_USER}/${BACKEND_IMAGE}:${BUILD_NUMBER}
     restart: always
     environment:
       NODE_ENV: 'production'
@@ -22,7 +22,7 @@ services:
       - db
   
   frontend:
-    image: ${DOCKER_HUB_USER}/${FRONTEND_IMAGE}:{BUILD_NUMBER}
+    image: ${DOCKER_HUB_USER}/${FRONTEND_IMAGE}:${BUILD_NUMBER}
     restart: always
     environment: 
       REACT_APP_BACKEND_URL: /api
