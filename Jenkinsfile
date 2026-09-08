@@ -101,7 +101,7 @@ pipeline {
       steps {
         sshagent(['app-server-ssh']) {
           sh """
-            scp -o StrictHostKeyChecking=no ./docker-compose.yml ubuntu@${env.APP_SERVER_IP}:~/docker-compose.yml
+            scp -o StrictHostKeyChecking=no ./docker-compose.yaml ubuntu@${env.APP_SERVER_IP}:~/docker-compose.yaml
 
             ssh -o StrictHostKeyChecking=no ubuntu@${env.APP_SERVER_IP} "
               export DOCKER_HUB_USER='${DOCKER_HUB_USER}'
