@@ -123,9 +123,9 @@ pipeline {
       steps {
         sshagent(['app-server-ssh']) {
           withCredentials([
-            string(credentialsId: 'db-user', variable: 'TF_VAR_DB_USER'),
-            string(credentialsId: 'db-password', variable: 'TF_VAR_DB_PASSWORD'),
-            string(credentialsId: 'db-name', variable: 'TF_VAR_DB_NAME')
+            string(credentialsId: 'db-user', variable: 'PROD_DB_USERNAME'),
+            string(credentialsId: 'db-password', variable: 'PROD_DB_PASSWORD'),
+            string(credentialsId: 'db-name', variable: 'PROD_DB_NAME')
           ]) {
             sh """ 
               ssh -o StrictHostKeyChecking=no ubuntu@${env.APP_SERVER_IP} "
