@@ -120,6 +120,11 @@ pipeline {
         sshagent(['app-server-ssh']) {
           sh """ 
             ssh -o StrictHostKeyChecking=no ubuntu@${env.APP_SERVER_IP} "
+              export DOCKER_HUB_USER='${DOCKER_HUB_USER}' &&
+              export BACKEND_IMAGE='${BACKEND_IMAGE}' &&
+              export FRONTEND_IMAGE='${FRONTEND_IMAGE}' &&
+              export BUILD_NUMBER='${BUILD_NUMBER}' &&
+              
               timeout 60 bash -c 'until docker compose exec -T db pg_isready; do sleep 3; done' &&
               docker compose run --rm -T backend npm run sqlz -- db:migrate
             "
