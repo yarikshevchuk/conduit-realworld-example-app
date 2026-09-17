@@ -16,9 +16,6 @@ pipeline {
           withCredentials([
             string(credentialsId: 'aws-access-key-id', variable: 'AWS_ACCESS_KEY_ID'),
             string(credentialsId: 'aws-secret-access-key', variable: 'AWS_SECRET_ACCESS_KEY'),
-            string(credentialsId: 'db-user', variable: 'TF_VAR_DB_USER'),
-            string(credentialsId: 'db-password', variable: 'TF_VAR_DB_PASSWORD'),
-            string(credentialsId: 'db-name', variable: 'TF_VAR_DB_NAME')
           ]) {
             echo "Provisioning infrastructure"
             sh 'make'
@@ -104,15 +101,11 @@ pipeline {
           sh """
             scp -o StrictHostKeyChecking=no ./docker-compose.yaml ubuntu@${env.APP_SERVER_IP}:~/docker-compose.yaml
             scp -o StrictHostKeyChecking=no ./nginx.conf ubuntu@${env.APP_SERVER_IP}:~/nginx.conf
+            scp -o StrictHostKeyChecking=no ./deploy-credentials.sh ubuntu@${env.APP_SERVER_IP}:~/deploy-credentials.sh
 
             ssh -o StrictHostKeyChecking=no ubuntu@${env.APP_SERVER_IP} "
-              export DOCKER_HUB_USER='${DOCKER_HUB_USER}'
-              export BACKEND_IMAGE='${BACKEND_IMAGE}'
-              export FRONTEND_IMAGE='${FRONTEND_IMAGE}'
-              export BUILD_NUMBER='${BUILD_NUMBER}'
-
-              docker compose pull &&
-              docker compose up -d
+              chmod +x ~/deploy-credentials.sh &&
+              ~/deploy-credentials.sh '${DOCKER_HUB_USER}' '${BACKEND_IMAGE}' '${FRONTEND_IMAGE}' '${BUILD_NUMBER}'
             "
           """
         }
@@ -122,23 +115,17 @@ pipeline {
     stage ('DB migration') {
       steps {
         sshagent(['app-server-ssh']) {
-          withCredentials([
-            string(credentialsId: 'db-user', variable: 'PROD_DB_USERNAME'),
-            string(credentialsId: 'db-password', variable: 'PROD_DB_PASSWORD'),
-            string(credentialsId: 'db-name', variable: 'PROD_DB_NAME')
-          ]) {
-            sh """ 
-              ssh -o StrictHostKeyChecking=no ubuntu@${env.APP_SERVER_IP} "
-                export DOCKER_HUB_USER='${DOCKER_HUB_USER}' &&
-                export BACKEND_IMAGE='${BACKEND_IMAGE}' &&
-                export BUILD_NUMBER='${BUILD_NUMBER}' &&
+          sh """ 
+            ssh -o StrictHostKeyChecking=no ubuntu@${env.APP_SERVER_IP} "
+              export DOCKER_HUB_USER='${DOCKER_HUB_USER}' &&
+              export BACKEND_IMAGE='${BACKEND_IMAGE}' &&
+              export BUILD_NUMBER='${BUILD_NUMBER}' &&
 
-                timeout 60 bash -c 'until docker compose exec -T db pg_isready; do sleep 3; done' &&
+              timeout 60 bash -c 'until docker compose exec -T db pg_isready; do sleep 3; done' &&
 
-                docker compose exec -T backend npm run sqlz -- db:migrate
-              "
-            """
-          }
+              docker compose exec -T backend npm run sqlz -- db:migrate
+            "
+          """
         }
       }
     }
